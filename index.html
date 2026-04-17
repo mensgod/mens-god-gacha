@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>MEN'S GOD GACHA</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --gold: #d4af37;
+  --gold-light: #e8c866;
+  --gold-dark: #9a7c1f;
+  --bronze: #8b6914;
+  --dark: #1a1a1a;
+  --darker: #0a0a0a;
+  --charcoal-3: #252525;
+  --accent: #d4af37;
+  --white: #f5f2ea;
+  --gray: #a8a39a;
+  --success: #4ade80;
+}
+html, body {
+  width: 100%; height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+  background: var(--darker);
+  color: var(--white);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* ===== CANVAS OVERLAY ===== */
+#fxCanvas {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.screen.active { opacity: 1; pointer-events: auto; }
+
+/* ===== START SCREEN ===== */
+#startScreen { background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%); }
+.logo-area { margin-bottom: 24px; text-align: center; }
+.logo-text {
+  font-size: 38px; font-weight: 900; letter-spacing: 5px;
+  color: var(--gold);
+  text-shadow: 0 2px 30px rgba(201,168,76,0.5), 0 0 60px rgba(201,168,76,0.2);
+}
+.logo-sub {
+  font-size: 12px; color: var(--gold-light);
+  margin-top: 6px; letter-spacing: 4px; opacity: 0.8;
+}
+
+/* Machine preview on start */
+.machine-wrap { position: relative; width: 220px; height: 300px; margin-bottom: 32px; }
+.machine-svg { width: 100%; height: 100%; filter: drop-shadow(0 15px 40px rgba(0,0,0,0.6)); }
+
+.start-btn {
+  width: 280px; height: 68px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+  background-size: 200% 100%;
+  animation: shimmerBtn 3s ease-in-out infinite;
+  color: var(--darker); font-size: 22px; font-weight: 900; letter-spacing: 4px;
+  border: none; border-radius: 34px; cursor: pointer;
+  box-shadow: 0 6px 30px rgba(201,168,76,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+@keyframes shimmerBtn {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.start-btn:active { transform: scale(0.96); }
+
+.admin-link {
+  position: absolute; bottom: 32px; right: 24px;
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.06); border: none; border-radius: 50%;
+  color: var(--gray); font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ===== SELECT SCREEN ===== */
+#selectScreen { background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%); }
+.select-title { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+.select-subtitle { font-size: 14px; color: var(--gray); margin-bottom: 28px; }
+.prizes-container { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; }
+.prize-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+  border: 2px solid rgba(201,168,76,0.15); border-radius: 16px;
+  padding: 18px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: all 0.3s ease;
+}
+.prize-card:active { transform: scale(0.97); }
+.prize-card.selected {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.04) 100%);
+  box-shadow: 0 0 25px rgba(201,168,76,0.2);
+}
+.prize-icon {
+  width: 52px; height: 52px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0; background: rgba(255,255,255,0.08);
+}
+.prize-info { flex: 1; }
+.prize-name { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+.prize-desc { font-size: 12px; color: var(--gray); }
+.prize-check {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.3s;
+}
+.prize-card.selected .prize-check { background: var(--gold); border-color: var(--gold); }
+.prize-card.selected .prize-check::after { content: '\2713'; color: var(--darker); font-size: 16px; font-weight: 700; }
+
+.gacha-btn {
+  margin-top: 28px; width: 280px; height: 68px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  color: var(--darker); font-size: 22px; font-weight: 900; letter-spacing: 4px;
+  border: none; border-radius: 34px; cursor: pointer;
+  box-shadow: 0 6px 30px rgba(201,168,76,0.4);
+  opacity: 0.3; pointer-events: none; transition: all 0.3s;
+}
+.gacha-btn.enabled { opacity: 1; pointer-events: auto; }
+.gacha-btn:active { transform: scale(0.96); }
+
+/* ===== GACHA SCREEN ===== */
+#gachaScreen { background: radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 80%); }
+#gachaCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gacha-tap-zone {
+  position: absolute; inset: 0; z-index: 10; cursor: pointer;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 22%;
+}
+.gacha-tap-label {
+  font-size: 22px; font-weight: 800; color: var(--gold);
+  letter-spacing: 3px;
+  animation: tapPulse 1.5s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(212,175,55,0.6), 0 0 40px rgba(212,175,55,0.3);
+  background: rgba(10,10,10,0.4);
+  padding: 12px 28px;
+  border-radius: 30px;
+  border: 1px solid rgba(212,175,55,0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+@keyframes tapPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.97); }
+}
+
+/* ===== RESULT SCREEN ===== */
+#resultScreen { background: linear-gradient(180deg, var(--dark) 0%, var(--darker) 100%); }
+.result-container { text-align: center; z-index: 10; }
+
+.result-win .result-label {
+  font-size: 52px; font-weight: 900;
+  background: linear-gradient(135deg, #ffd700, #ffec8b, #ffd700);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(255,215,0,0.6));
+  animation: winPop 0.7s cubic-bezier(0.68,-0.55,0.265,1.55);
+  margin-bottom: 16px;
+}
+@keyframes winPop {
+  0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(3deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.result-capsule-wrap {
+  width: 140px; height: 140px; margin: 0 auto 20px;
+  position: relative;
+  animation: floatCapsule 3s ease-in-out infinite;
+}
+@keyframes floatCapsule {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(2deg); }
+  75% { transform: translateY(-8px) rotate(-2deg); }
+}
+.result-capsule-wrap canvas { width: 100%; height: 100%; }
+
+.result-prize-icon { font-size: 52px; margin-bottom: 12px; }
+.result-prize-name {
+  font-size: 26px; font-weight: 900; color: var(--white);
+  margin-bottom: 6px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+.result-prize-desc { font-size: 14px; color: var(--gray); margin-bottom: 36px; }
+
+.result-lose .result-label {
+  font-size: 40px; font-weight: 800; color: #aaa;
+  animation: winPop 0.7s cubic-bezier(0.68,-0.55,0.265,1.55);
+  margin-bottom: 16px;
+}
+.result-lose .result-message { font-size: 20px; color: var(--white); font-weight: 700; margin-bottom: 6px; }
+.result-lose .result-encourage { font-size: 14px; color: var(--gold-light); margin-bottom: 36px; }
+
+.reset-btn {
+  width: 200px; height: 50px;
+  background: rgba(255,255,255,0.08); color: var(--white);
+  font-size: 16px; font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 25px;
+  cursor: pointer;
+}
+.reset-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.12); }
+
+/* ===== FLASH OVERLAY ===== */
+.flash-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.1s;
+}
+.flash-overlay.active { opacity: 1; }
+
+/* ===== ADMIN SCREEN (unchanged) ===== */
+#adminScreen {
+  background: var(--darker);
+  padding: 20px;
+  padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  justify-content: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.admin-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; }
+.admin-title { font-size: 20px; font-weight: 700; color: var(--gold); }
+.admin-close { width: 40px; height: 40px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: var(--white); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.admin-section { width: 100%; margin-bottom: 24px; }
+.admin-section-title { font-size: 14px; font-weight: 600; color: var(--gold-light); margin-bottom: 12px; letter-spacing: 1px; }
+.prize-editor { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.prize-editor-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.prize-editor-label { font-size: 15px; font-weight: 700; }
+.prize-editor-delete { width: 32px; height: 32px; background: rgba(233,69,96,0.2); border: none; border-radius: 8px; color: var(--accent); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--gray); margin-bottom: 6px; }
+.field input, .field select { width: 100%; height: 44px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: var(--white); font-size: 15px; padding: 0 12px; -webkit-appearance: none; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--gold); }
+.prob-slider { display: flex; align-items: center; gap: 12px; }
+.prob-slider input[type="range"] { flex: 1; height: 6px; -webkit-appearance: none; background: rgba(255,255,255,0.15); border-radius: 3px; border: none; padding: 0; }
+.prob-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--gold); border-radius: 50%; cursor: pointer; }
+.prob-value { width: 50px; text-align: right; font-size: 18px; font-weight: 700; color: var(--gold); }
+.icon-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+.icon-option { width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 2px solid transparent; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; transition: all 0.2s; }
+.icon-option.selected { border-color: var(--gold); background: rgba(201,168,76,0.15); }
+.add-prize-btn { width: 100%; height: 50px; background: rgba(201,168,76,0.1); border: 2px dashed rgba(201,168,76,0.3); border-radius: 12px; color: var(--gold); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.admin-save-btn { width: 100%; height: 56px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%); color: var(--darker); font-size: 18px; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; letter-spacing: 2px; margin-top: 8px; }
+.admin-save-btn:active { transform: scale(0.98); }
+.log-entry { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+.log-date { color: var(--gray); }
+.log-result { font-weight: 600; }
+.log-win { color: var(--gold); }
+.log-lose { color: var(--gray); }
+.log-empty { text-align: center; color: var(--gray); font-size: 13px; padding: 20px 0; }
+.log-clear-btn { margin-top: 12px; width: 100%; height: 40px; background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3); border-radius: 8px; color: var(--accent); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  .screen { padding-top: calc(24px + env(safe-area-inset-top)); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+}
+</style>
+</head>
+<body>
+
+<canvas id="fxCanvas"></canvas>
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen active">
+  <div class="logo-area">
+    <div class="logo-text">MEN'S GOD</div>
+    <div class="logo-sub">PREMIUM GACHA</div>
+  </div>
+  <div class="machine-wrap">
+    <svg class="machine-svg" viewBox="0 0 220 300" fill="none">
+      <defs>
+        <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1f1f1f"/>
+          <stop offset="50%" stop-color="#151515"/>
+          <stop offset="100%" stop-color="#0a0a0a"/>
+        </linearGradient>
+        <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e8c866"/>
+          <stop offset="50%" stop-color="#d4af37"/>
+          <stop offset="100%" stop-color="#9a7c1f"/>
+        </linearGradient>
+        <linearGradient id="silverGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f0f0f0"/>
+          <stop offset="50%" stop-color="#c0c0c0"/>
+          <stop offset="100%" stop-color="#808080"/>
+        </linearGradient>
+        <linearGradient id="silverDark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#707070"/>
+          <stop offset="100%" stop-color="#404040"/>
+        </linearGradient>
+        <linearGradient id="goldDark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#8a6b15"/>
+          <stop offset="100%" stop-color="#5a4710"/>
+        </linearGradient>
+        <radialGradient id="glassInnerGrad" cx="0.5" cy="0.35" r="0.7">
+          <stop offset="0%" stop-color="rgba(60,60,70,0.4)"/>
+          <stop offset="70%" stop-color="rgba(20,20,25,0.6)"/>
+          <stop offset="100%" stop-color="rgba(5,5,10,0.9)"/>
+        </radialGradient>
+      </defs>
+      <!-- Body -->
+      <rect x="15" y="8" width="190" height="284" rx="12" fill="url(#bodyGrad)" stroke="rgba(212,175,55,0.3)" stroke-width="1"/>
+      <!-- Nameplate -->
+      <rect x="15" y="8" width="190" height="28" fill="#1a1a1a"/>
+      <line x1="25" y1="36" x2="195" y2="36" stroke="#d4af37" stroke-width="0.8"/>
+      <text x="110" y="26" text-anchor="middle" font-size="11" font-weight="900" fill="#d4af37" letter-spacing="3">MEN'S GOD</text>
+      <circle cx="28" cy="22" r="1.3" fill="#d4af37"/>
+      <circle cx="192" cy="22" r="1.3" fill="#d4af37"/>
+
+      <!-- Glass dome frame (gold) - dome shape with flat bottom -->
+      <path d="M 25 170 L 25 110 A 85 70 0 0 1 195 110 L 195 170 Z" fill="url(#goldGrad)"/>
+
+      <!-- Glass inner area -->
+      <g>
+        <clipPath id="domeClip">
+          <path d="M 29 166 L 29 110 A 81 66 0 0 1 191 110 L 191 166 Z"/>
+        </clipPath>
+        <path d="M 29 166 L 29 110 A 81 66 0 0 1 191 110 L 191 166 Z" fill="url(#glassInnerGrad)"/>
+
+        <!-- Capsules (Gold/Silver/Clear) -->
+        <g clip-path="url(#domeClip)">
+          <!-- Row 1 (top) -->
+          <g transform="translate(75,78)">
+            <circle r="14" fill="rgba(255,255,255,0.15)" stroke="rgba(200,210,220,0.4)" stroke-width="1"/>
+            <path d="M -14 0 A 14 14 0 0 1 14 0 Z" fill="rgba(240,245,250,0.3)"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,255,255,0.7)"/>
+          </g>
+          <g transform="translate(110,74)">
+            <circle r="14" fill="url(#goldGrad)"/>
+            <path d="M -14 0 A 14 14 0 0 0 14 0 Z" fill="url(#goldDark)"/>
+            <line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(50,35,5,0.5)" stroke-width="0.8"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,250,220,0.7)"/>
+          </g>
+          <g transform="translate(145,80)">
+            <circle r="14" fill="url(#silverGrad)"/>
+            <path d="M -14 0 A 14 14 0 0 0 14 0 Z" fill="url(#silverDark)"/>
+            <line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(20,20,20,0.5)" stroke-width="0.8"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,255,255,0.8)"/>
+          </g>
+          <!-- Row 2 -->
+          <g transform="translate(60,108)">
+            <circle r="14" fill="url(#goldGrad)"/>
+            <path d="M -14 0 A 14 14 0 0 0 14 0 Z" fill="url(#goldDark)"/>
+            <line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(50,35,5,0.5)" stroke-width="0.8"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,250,220,0.7)"/>
+          </g>
+          <g transform="translate(92,110)">
+            <circle r="14" fill="rgba(255,255,255,0.15)" stroke="rgba(200,210,220,0.4)" stroke-width="1"/>
+            <path d="M -14 0 A 14 14 0 0 1 14 0 Z" fill="rgba(240,245,250,0.3)"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,255,255,0.7)"/>
+          </g>
+          <g transform="translate(128,108)">
+            <circle r="14" fill="url(#silverGrad)"/>
+            <path d="M -14 0 A 14 14 0 0 0 14 0 Z" fill="url(#silverDark)"/>
+            <line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(20,20,20,0.5)" stroke-width="0.8"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,255,255,0.8)"/>
+          </g>
+          <g transform="translate(162,112)">
+            <circle r="14" fill="url(#goldGrad)"/>
+            <path d="M -14 0 A 14 14 0 0 0 14 0 Z" fill="url(#goldDark)"/>
+            <line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(50,35,5,0.5)" stroke-width="0.8"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,250,220,0.7)"/>
+          </g>
+          <!-- Row 3 (bottom) -->
+          <g transform="translate(75,140)">
+            <circle r="14" fill="url(#silverGrad)"/>
+            <path d="M -14 0 A 14 14 0 0 0 14 0 Z" fill="url(#silverDark)"/>
+            <line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(20,20,20,0.5)" stroke-width="0.8"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,255,255,0.8)"/>
+          </g>
+          <g transform="translate(110,145)">
+            <circle r="14" fill="url(#goldGrad)"/>
+            <path d="M -14 0 A 14 14 0 0 0 14 0 Z" fill="url(#goldDark)"/>
+            <line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(50,35,5,0.5)" stroke-width="0.8"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,250,220,0.7)"/>
+          </g>
+          <g transform="translate(145,140)">
+            <circle r="14" fill="rgba(255,255,255,0.15)" stroke="rgba(200,210,220,0.4)" stroke-width="1"/>
+            <path d="M -14 0 A 14 14 0 0 1 14 0 Z" fill="rgba(240,245,250,0.3)"/>
+            <ellipse cx="-4" cy="-6" rx="5" ry="2.5" fill="rgba(255,255,255,0.7)"/>
+          </g>
+        </g>
+
+        <!-- Glass reflection -->
+        <ellipse cx="70" cy="78" rx="28" ry="14" fill="rgba(255,255,255,0.12)" transform="rotate(-20 70 78)" clip-path="url(#domeClip)"/>
+      </g>
+
+      <!-- Dial area -->
+      <rect x="18" y="182" width="184" height="36" fill="#151515"/>
+      <line x1="25" y1="182" x2="195" y2="182" stroke="#d4af37" stroke-width="0.5"/>
+      <line x1="25" y1="218" x2="195" y2="218" stroke="#d4af37" stroke-width="0.5"/>
+      <!-- Dial -->
+      <circle cx="110" cy="200" r="14" fill="url(#goldGrad)" stroke="rgba(0,0,0,0.3)" stroke-width="0.5"/>
+      <circle cx="110" cy="200" r="10" fill="#2a2015"/>
+      <circle cx="110" cy="200" r="2.5" fill="#d4af37"/>
+      <path d="M 110 192 L 108 196 L 112 196 Z" fill="#e8c866"/>
+      <!-- Handle arm + knob -->
+      <line x1="124" y1="200" x2="190" y2="200" stroke="#d4af37" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="192" cy="200" r="5" fill="url(#goldGrad)">
+        <animateTransform attributeName="transform" type="rotate" values="0 110 200;8 110 200;0 110 200" dur="2s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Chute area -->
+      <rect x="18" y="222" width="184" height="42" fill="#0f0f0f"/>
+      <rect x="80" y="235" width="60" height="18" rx="4" ry="8" fill="#000" stroke="#d4af37" stroke-width="0.8"/>
+      <rect x="82" y="237" width="56" height="3" fill="rgba(0,0,0,0.7)"/>
+
+      <!-- Base -->
+      <rect x="15" y="264" width="190" height="28" rx="0 0 12 12" fill="#0a0a0a"/>
+      <line x1="25" y1="264" x2="195" y2="264" stroke="#d4af37" stroke-width="0.5"/>
+      <!-- Re-apply body outline -->
+      <rect x="15" y="8" width="190" height="284" rx="12" fill="none" stroke="rgba(212,175,55,0.3)" stroke-width="1"/>
+    </svg>
+  </div>
+  <button class="start-btn" id="startBtn">チャレンジする</button>
+  <button class="admin-link" id="adminBtn">&#9881;</button>
+</div>
+
+<!-- SELECT SCREEN -->
+<div id="selectScreen" class="screen">
+  <div class="select-title">景品をえらんでください</div>
+  <div class="select-subtitle">チャレンジしたい景品をタップ！</div>
+  <div class="prizes-container" id="prizesContainer"></div>
+  <button class="gacha-btn" id="gachaBtn">ガチャを回す！</button>
+</div>
+
+<!-- GACHA SCREEN -->
+<div id="gachaScreen" class="screen">
+  <canvas id="gachaCanvas"></canvas>
+  <div class="gacha-tap-zone" id="gachaTapZone">
+    <div class="gacha-tap-label" id="gachaTapLabel">タップしてガチャを回す！</div>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="resultScreen" class="screen">
+  <div class="result-container" id="resultContainer"></div>
+</div>
+
+<!-- ADMIN SCREEN -->
+<div id="adminScreen" class="screen">
+  <div class="admin-header">
+    <div class="admin-title">管理画面</div>
+    <button class="admin-close" id="adminClose">&times;</button>
+  </div>
+  <div class="admin-section">
+    <div class="admin-section-title">景品設定</div>
+    <div id="prizeEditors"></div>
+    <button class="add-prize-btn" id="addPrizeBtn">＋ 景品を追加</button>
+  </div>
+  <div class="admin-section">
+    <button class="admin-save-btn" id="adminSaveBtn">設定を保存</button>
+  </div>
+  <div class="admin-section">
+    <div class="admin-section-title">抽選ログ</div>
+    <div id="logEntries"></div>
+    <button class="log-clear-btn" id="logClearBtn">ログをクリア</button>
+  </div>
+  <div style="height:40px;flex-shrink:0;"></div>
+</div>
+
+<script>
+// ============================================================
+// AUDIO ENGINE v2 — Realistic synthesized sound effects
+// ============================================================
+const Audio2 = (() => {
+  let ctx;
+  function C() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  function osc(freq, type, dur, vol, delay = 0) {
+    const c = C(), t = c.currentTime + delay;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g).connect(c.destination);
+    o.start(t); o.stop(t + dur);
+  }
+
+  function noise(dur, vol, delay = 0, hipass = 0) {
+    const c = C(), t = c.currentTime + delay;
+    const len = c.sampleRate * dur;
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(), g = c.createGain();
+    src.buffer = buf;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    if (hipass > 0) {
+      const f = c.createBiquadFilter();
+      f.type = 'highpass'; f.frequency.value = hipass;
+      src.connect(f).connect(g).connect(c.destination);
+    } else {
+      src.connect(g).connect(c.destination);
+    }
+    src.start(t); src.stop(t + dur);
+  }
+
+  function metalHit(freq, dur, vol, delay = 0) {
+    const c = C(), t = c.currentTime + delay;
+    const o1 = c.createOscillator(), o2 = c.createOscillator();
+    const g = c.createGain();
+    o1.type = 'sine'; o1.frequency.setValueAtTime(freq, t);
+    o2.type = 'sine'; o2.frequency.setValueAtTime(freq * 2.4, t);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o1.connect(g); o2.connect(g); g.connect(c.destination);
+    o1.start(t); o1.stop(t + dur);
+    o2.start(t); o2.stop(t + dur);
+  }
+
+  return {
+    tap() { metalHit(3000, 0.08, 0.15); },
+
+    select() {
+      osc(880, 'sine', 0.12, 0.2);
+      osc(1320, 'sine', 0.12, 0.12, 0.06);
+    },
+
+    coinInsert() {
+      metalHit(4000, 0.15, 0.25);
+      metalHit(5200, 0.1, 0.15, 0.08);
+      metalHit(3500, 0.2, 0.1, 0.15);
+    },
+
+    gearCrank() {
+      for (let i = 0; i < 12; i++) {
+        const d = i * 0.07;
+        noise(0.03, 0.12, d, 800);
+        osc(120 + Math.random() * 80, 'triangle', 0.04, 0.08, d);
+      }
+    },
+
+    capsulesTumble() {
+      for (let i = 0; i < 20; i++) {
+        const d = i * 0.08 + Math.random() * 0.04;
+        const f = 200 + Math.random() * 400;
+        osc(f, 'triangle', 0.05, 0.06, d);
+        noise(0.02, 0.04, d, 1000);
+      }
+    },
+
+    capsuleRoll() {
+      for (let i = 0; i < 8; i++) {
+        const d = i * 0.12;
+        osc(150 + i * 30, 'triangle', 0.08, 0.1, d);
+        noise(0.04, 0.05, d, 600);
+      }
+    },
+
+    capsuleDrop() {
+      osc(300, 'triangle', 0.1, 0.2);
+      noise(0.08, 0.15, 0, 200);
+      osc(200, 'triangle', 0.08, 0.12, 0.15);
+      noise(0.05, 0.08, 0.15, 300);
+      osc(250, 'triangle', 0.05, 0.08, 0.25);
+    },
+
+    suspenseRise() {
+      for (let i = 0; i < 15; i++) {
+        const d = i * 0.12;
+        const f = 300 + i * 40 + i * i * 2;
+        osc(f, 'sine', 0.15, 0.08 + i * 0.008, d);
+      }
+      noise(1.8, 0.03, 0, 2000);
+    },
+
+    winReveal() {
+      osc(523, 'sine', 0.25, 0.3);
+      osc(659, 'sine', 0.25, 0.25, 0.12);
+      osc(784, 'sine', 0.25, 0.25, 0.24);
+      osc(1047, 'sine', 0.4, 0.3, 0.36);
+      osc(1319, 'sine', 0.4, 0.2, 0.36);
+      osc(784, 'sine', 0.5, 0.15, 0.55);
+      osc(1047, 'sine', 0.6, 0.25, 0.55);
+      osc(1568, 'sine', 0.6, 0.15, 0.55);
+      noise(0.3, 0.08, 0.34, 3000);
+      for (let i = 0; i < 6; i++) metalHit(3000 + i * 500, 0.1, 0.06, 0.36 + i * 0.05);
+    },
+
+    loseReveal() {
+      osc(400, 'sine', 0.3, 0.15);
+      osc(350, 'sine', 0.3, 0.12, 0.15);
+      osc(280, 'sine', 0.4, 0.1, 0.3);
+    },
+
+    shimmer() {
+      for (let i = 0; i < 5; i++) {
+        metalHit(4000 + Math.random() * 3000, 0.15, 0.04, i * 0.2 + Math.random() * 0.1);
+      }
+    }
+  };
+})();
+
+// ============================================================
+// FX CANVAS — Particles, light rays, flash
+// ============================================================
+const FX = (() => {
+  const canvas = document.getElementById('fxCanvas');
+  const fctx = canvas.getContext('2d');
+  let particles = [];
+  let rays = [];
+  let running = false;
+  let W, H;
+
+  function resize() {
+    W = canvas.width = window.innerWidth * 2;
+    H = canvas.height = window.innerHeight * 2;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    fctx.scale(1, 1);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function loop() {
+    if (!running && particles.length === 0 && rays.length === 0) return;
+    fctx.clearRect(0, 0, W, H);
+
+    rays = rays.filter(r => {
+      r.age += 0.016;
+      if (r.age > r.life) return false;
+      const progress = r.age / r.life;
+      const alpha = progress < 0.3 ? progress / 0.3 : 1 - (progress - 0.3) / 0.7;
+      fctx.save();
+      fctx.translate(r.x, r.y);
+      fctx.rotate(r.angle + r.age * r.rotSpeed);
+      fctx.globalAlpha = alpha * r.alpha;
+      fctx.fillStyle = r.color;
+      fctx.fillRect(-r.width / 2, 0, r.width, r.length);
+      fctx.restore();
+      return true;
+    });
+
+    particles = particles.filter(p => {
+      p.age += 0.016;
+      if (p.age > p.life) return false;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.vx *= 0.99;
+      p.rotation += p.rotSpeed;
+      const alpha = 1 - p.age / p.life;
+      fctx.save();
+      fctx.translate(p.x, p.y);
+      fctx.rotate(p.rotation);
+      fctx.globalAlpha = alpha;
+      fctx.fillStyle = p.color;
+      if (p.shape === 'circle') {
+        fctx.beginPath();
+        fctx.arc(0, 0, p.size, 0, Math.PI * 2);
+        fctx.fill();
+      } else if (p.shape === 'star') {
+        drawStar(fctx, 0, 0, p.size);
+      } else {
+        fctx.fillRect(-p.size / 2, -p.size * 1.5, p.size, p.size * 3);
+      }
+      fctx.restore();
+      return true;
+    });
+
+    requestAnimationFrame(loop);
+    if (particles.length === 0 && rays.length === 0) running = false;
+  }
+
+  function drawStar(ctx, x, y, r) {
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = (i * 72 - 90) * Math.PI / 180;
+      const a2 = ((i * 72) + 36 - 90) * Math.PI / 180;
+      ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      ctx.lineTo(x + Math.cos(a2) * r * 0.4, y + Math.sin(a2) * r * 0.4);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function ensure() { if (!running) { running = true; loop(); } }
+
+  const GOLD_COLORS = ['#ffd700', '#ffec8b', '#daa520', '#f0c040', '#fff8dc'];
+  const CONFETTI_COLORS = ['#ffd700', '#e94560', '#3b82f6', '#22c55e', '#a855f7', '#f97316', '#ec4899', '#ffec8b'];
+
+  return {
+    confetti(cx, cy, count = 80) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 4 + Math.random() * 12;
+        particles.push({
+          x: cx * 2, y: cy * 2,
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 6,
+          gravity: 0.25, size: 4 + Math.random() * 6,
+          color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+          shape: Math.random() > 0.3 ? 'rect' : 'circle',
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.3,
+          age: 0, life: 2 + Math.random() * 1.5
+        });
+      }
+      ensure();
+    },
+
+    sparkle(cx, cy, count = 30) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 6;
+        particles.push({
+          x: cx * 2, y: cy * 2,
+          vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+          gravity: 0, size: 3 + Math.random() * 5,
+          color: GOLD_COLORS[Math.floor(Math.random() * GOLD_COLORS.length)],
+          shape: 'star', rotation: Math.random() * Math.PI,
+          rotSpeed: (Math.random() - 0.5) * 0.2,
+          age: Math.random() * 0.3, life: 0.8 + Math.random() * 0.8
+        });
+      }
+      ensure();
+    },
+
+    lightRays(cx, cy, count = 12, duration = 2) {
+      for (let i = 0; i < count; i++) {
+        rays.push({
+          x: cx * 2, y: cy * 2,
+          angle: (i / count) * Math.PI * 2,
+          width: 3 + Math.random() * 4,
+          length: 300 + Math.random() * 500,
+          color: GOLD_COLORS[Math.floor(Math.random() * GOLD_COLORS.length)],
+          alpha: 0.15 + Math.random() * 0.15,
+          rotSpeed: 0.1 + Math.random() * 0.1,
+          age: 0, life: duration
+        });
+      }
+      ensure();
+    },
+
+    flash(color = 'rgba(255,255,255,0.8)', duration = 300) {
+      const el = document.getElementById('flashOverlay');
+      el.style.background = color;
+      el.classList.add('active');
+      setTimeout(() => el.classList.remove('active'), duration);
+    },
+
+    clear() { particles = []; rays = []; fctx.clearRect(0, 0, W, H); }
+  };
+})();
+
+// ============================================================
+// GACHA MACHINE RENDERER (Canvas)
+// ============================================================
+const GachaMachine = (() => {
+  let canvas, ctx, W, H;
+  let capsules = [];
+  let animId = null;
+  let phase = 'idle';
+  let phaseTime = 0;
+  let isWin = false;
+  let droppedCapsule = null;
+  let onComplete = null;
+  let shakeOffset = { x: 0, y: 0 };
+  let dialAngle = 0;
+  const CAPSULE_TYPES = ['gold', 'silver', 'clear'];
+
+  let dw, dh; // drawing width/height in CSS pixels
+
+  function init(c) {
+    canvas = c;
+    ctx = canvas.getContext('2d');
+    resize();
+  }
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    dw = rect.width;
+    dh = rect.height;
+    canvas.width = dw * dpr;
+    canvas.height = dh * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function createCapsules() {
+    capsules = [];
+    // Dome bounds (full width)
+    const domeX = dw * 0.08 + 10;
+    const domeW = dw * 0.84 - 20;
+    const domeY = dh * 0.13;
+    const domeH = dh * 0.42;
+
+    const capR = Math.min(domeW, domeH) * 0.095;
+    // Distribute capsules across the dome area to fill it
+    const cols = 5, rows = 4;
+    const spacingX = domeW / (cols + 0.5);
+    const spacingY = domeH / (rows + 0.5);
+    let idx = 0;
+    for (let row = 0; row < rows; row++) {
+      const offset = row % 2 === 0 ? 0 : spacingX / 2;
+      const colsInRow = row % 2 === 0 ? cols : cols - 1;
+      for (let col = 0; col < colsInRow; col++) {
+        capsules.push({
+          x: domeX + spacingX * (col + 0.75) + offset + (Math.random() - 0.5) * 4,
+          y: domeY + spacingY * (row + 0.75) + (Math.random() - 0.5) * 4,
+          r: capR + Math.random() * 2,
+          type: CAPSULE_TYPES[idx % 3],
+          vx: 0, vy: 0, angle: Math.random() * 0.4 - 0.2
+        });
+        idx++;
+      }
+    }
+  }
+
+  function drawMachine(t) {
+    const w = dw, h = dh;
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.translate(shakeOffset.x, shakeOffset.y);
+
+    const bx = w * 0.08, bw = w * 0.84;
+    const bh = h * 0.72;
+    const by = h * 0.05;
+
+    // ===== Body (matte black) =====
+    const bodyGrad = ctx.createLinearGradient(bx, by, bx, by + bh);
+    bodyGrad.addColorStop(0, '#1f1f1f');
+    bodyGrad.addColorStop(0.5, '#151515');
+    bodyGrad.addColorStop(1, '#0a0a0a');
+    ctx.fillStyle = bodyGrad;
+    roundRect(ctx, bx, by, bw, bh, 14);
+    ctx.fill();
+
+    // ===== Nameplate =====
+    const plateH = 42;
+    const plateGrad = ctx.createLinearGradient(bx, by, bx, by + plateH);
+    plateGrad.addColorStop(0, '#2a2a2a');
+    plateGrad.addColorStop(1, '#151515');
+    ctx.fillStyle = plateGrad;
+    roundRect(ctx, bx, by, bw, plateH, { tl: 14, tr: 14, bl: 0, br: 0 });
+    ctx.fill();
+
+    // Gold line below nameplate
+    ctx.beginPath();
+    ctx.moveTo(bx + 18, by + plateH);
+    ctx.lineTo(bx + bw - 18, by + plateH);
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // MEN'S GOD text (gold gradient)
+    ctx.save();
+    const textGrad = ctx.createLinearGradient(0, by + 10, 0, by + plateH - 5);
+    textGrad.addColorStop(0, '#e8c866');
+    textGrad.addColorStop(0.5, '#d4af37');
+    textGrad.addColorStop(1, '#9a7c1f');
+    ctx.fillStyle = textGrad;
+    ctx.font = '900 16px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetY = 1;
+    ctx.fillText("MEN'S GOD", w / 2, by + plateH / 2);
+    ctx.restore();
+
+    // Decorative dots
+    ctx.fillStyle = '#d4af37';
+    ctx.beginPath(); ctx.arc(bx + 28, by + plateH / 2, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx + bw - 28, by + plateH / 2, 2, 0, Math.PI * 2); ctx.fill();
+
+    // ===== Glass dome (full width) =====
+    const domeY = by + plateH + 12;
+    const domeH = bh * 0.48;
+    const domeX = bx + 12;
+    const domeW = bw - 24;
+    const domeR = domeW * 0.5;
+
+    // Gold frame (outer dome shape)
+    ctx.save();
+    const frameGrad = ctx.createLinearGradient(domeX, domeY, domeX, domeY + domeH);
+    frameGrad.addColorStop(0, '#e8c866');
+    frameGrad.addColorStop(0.5, '#d4af37');
+    frameGrad.addColorStop(1, '#9a7c1f');
+    ctx.fillStyle = frameGrad;
+    roundRect(ctx, domeX, domeY, domeW, domeH, { tl: domeR, tr: domeR, bl: 14, br: 14 });
+    ctx.fill();
+    ctx.restore();
+
+    // Glass interior
+    const glassX = domeX + 6;
+    const glassY = domeY + 6;
+    const glassW = domeW - 12;
+    const glassH = domeH - 12;
+    const glassR = glassW * 0.5;
+
+    ctx.save();
+    const glassGrad = ctx.createRadialGradient(
+      glassX + glassW / 2, glassY + glassH / 3, 10,
+      glassX + glassW / 2, glassY + glassH / 2, glassW / 1.3
+    );
+    glassGrad.addColorStop(0, 'rgba(60,60,70,0.4)');
+    glassGrad.addColorStop(0.7, 'rgba(20,20,25,0.6)');
+    glassGrad.addColorStop(1, 'rgba(5,5,10,0.9)');
+    ctx.fillStyle = glassGrad;
+    roundRect(ctx, glassX, glassY, glassW, glassH, { tl: glassR, tr: glassR, bl: 10, br: 10 });
+    ctx.fill();
+
+    // Clip for capsules
+    roundRect(ctx, glassX, glassY, glassW, glassH, { tl: glassR, tr: glassR, bl: 10, br: 10 });
+    ctx.clip();
+
+    // Draw capsules
+    capsules.forEach(cap => drawCapsule(ctx, cap.x, cap.y, cap.r, cap.type, cap.angle));
+
+    ctx.restore();
+
+    // Glass reflection
+    ctx.save();
+    roundRect(ctx, glassX, glassY, glassW, glassH, { tl: glassR, tr: glassR, bl: 10, br: 10 });
+    ctx.clip();
+    const reflGrad = ctx.createLinearGradient(glassX, glassY, glassX + glassW * 0.6, glassY + glassH * 0.5);
+    reflGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+    reflGrad.addColorStop(0.5, 'rgba(255,255,255,0.03)');
+    reflGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = reflGrad;
+    ctx.beginPath();
+    ctx.ellipse(glassX + glassW * 0.3, glassY + glassH * 0.25, glassW * 0.35, glassH * 0.2, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // ===== Dial area =====
+    const dialY = domeY + domeH + 10;
+    const dialH = 60;
+    const dialGrad = ctx.createLinearGradient(bx, dialY, bx, dialY + dialH);
+    dialGrad.addColorStop(0, '#252525');
+    dialGrad.addColorStop(1, '#0a0a0a');
+    ctx.fillStyle = dialGrad;
+    ctx.fillRect(bx + 8, dialY, bw - 16, dialH);
+
+    // Gold lines
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(bx + 18, dialY); ctx.lineTo(bx + bw - 18, dialY);
+    ctx.moveTo(bx + 18, dialY + dialH); ctx.lineTo(bx + bw - 18, dialY + dialH);
+    ctx.stroke();
+
+    // Dial knob (gold)
+    const dialCX = w / 2, dialCY = dialY + dialH / 2;
+    const dialRad = 24;
+    ctx.save();
+    ctx.translate(dialCX, dialCY);
+    ctx.rotate(dialAngle);
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, dialRad, 0, Math.PI * 2);
+    const dg = ctx.createRadialGradient(-6, -6, 2, 0, 0, dialRad);
+    dg.addColorStop(0, '#e8c866');
+    dg.addColorStop(0.7, '#d4af37');
+    dg.addColorStop(1, '#9a7c1f');
+    ctx.fillStyle = dg;
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    // Inner groove
+    ctx.beginPath();
+    ctx.arc(0, 0, dialRad - 3, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Inner face (dark)
+    ctx.beginPath();
+    ctx.arc(0, 0, dialRad - 7, 0, Math.PI * 2);
+    const innerGrad = ctx.createRadialGradient(-2, -2, 1, 0, 0, dialRad - 7);
+    innerGrad.addColorStop(0, '#3a3025');
+    innerGrad.addColorStop(1, '#1a1510');
+    ctx.fillStyle = innerGrad;
+    ctx.fill();
+    // Marker arrow
+    ctx.fillStyle = '#e8c866';
+    ctx.beginPath();
+    ctx.moveTo(0, -dialRad + 9);
+    ctx.lineTo(-3, -dialRad + 16);
+    ctx.lineTo(3, -dialRad + 16);
+    ctx.closePath();
+    ctx.fill();
+    // Center dot
+    ctx.beginPath();
+    ctx.arc(0, 0, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#d4af37';
+    ctx.fill();
+    ctx.restore();
+
+    // Handle arm + knob
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(dialCX + dialRad, dialCY);
+    ctx.lineTo(bx + bw - 16, dialCY);
+    ctx.stroke();
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetY = 1;
+    ctx.beginPath();
+    ctx.arc(bx + bw - 14, dialCY, 7, 0, Math.PI * 2);
+    const hg = ctx.createRadialGradient(bx + bw - 16, dialCY - 2, 1, bx + bw - 14, dialCY, 7);
+    hg.addColorStop(0, '#e8c866');
+    hg.addColorStop(1, '#9a7c1f');
+    ctx.fillStyle = hg;
+    ctx.fill();
+    ctx.restore();
+
+    // ===== Chute =====
+    const chuteY = dialY + dialH + 8;
+    const chuteH = 50;
+    const chuteGrad = ctx.createLinearGradient(bx, chuteY, bx, chuteY + chuteH);
+    chuteGrad.addColorStop(0, '#151515');
+    chuteGrad.addColorStop(1, '#0a0a0a');
+    ctx.fillStyle = chuteGrad;
+    ctx.fillRect(bx + 8, chuteY, bw - 16, chuteH);
+
+    // Opening
+    const openX = w / 2 - 45, openY = chuteY + 14, openW = 90, openH = 24;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 1;
+    ctx.fillStyle = '#000';
+    roundRect(ctx, openX, openY, openW, openH, { tl: 3, tr: 3, bl: 10, br: 10 });
+    ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 1;
+    roundRect(ctx, openX, openY, openW, openH, { tl: 3, tr: 3, bl: 10, br: 10 });
+    ctx.stroke();
+
+    // ===== Base =====
+    const pedY = chuteY + chuteH;
+    const pedH = by + bh - pedY;
+    if (pedH > 0) {
+      const pedGrad = ctx.createLinearGradient(bx, pedY, bx, pedY + pedH);
+      pedGrad.addColorStop(0, '#1a1a1a');
+      pedGrad.addColorStop(1, '#050505');
+      ctx.fillStyle = pedGrad;
+      roundRect(ctx, bx, pedY, bw, pedH, { tl: 0, tr: 0, bl: 14, br: 14 });
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(bx + 14, pedY);
+      ctx.lineTo(bx + bw - 14, pedY);
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    // Body outline gold trim
+    ctx.strokeStyle = 'rgba(212,175,55,0.3)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, bx, by, bw, bh, 14);
+    ctx.stroke();
+
+    // ===== Dropped capsule =====
+    if (droppedCapsule) {
+      const dc = droppedCapsule;
+      ctx.save();
+      if (dc.glowing) {
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 20 + Math.sin(t * 5) * 10;
+      }
+      drawCapsule(ctx, dc.x, dc.y, dc.r, dc.type, dc.angle);
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  function drawCapsule(ctx, x, y, r, type, angle = 0) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+
+    let topColor, bottomColor, lineColor, highlightColor, isClear = false;
+
+    if (type === 'gold') {
+      topColor = ctx.createLinearGradient(-r, -r, r, r);
+      topColor.addColorStop(0, '#f4d580');
+      topColor.addColorStop(0.5, '#d4af37');
+      topColor.addColorStop(1, '#9a7c1f');
+      bottomColor = ctx.createLinearGradient(-r, 0, r, r);
+      bottomColor.addColorStop(0, '#8a6b15');
+      bottomColor.addColorStop(1, '#5a4710');
+      lineColor = 'rgba(50,35,5,0.5)';
+      highlightColor = 'rgba(255,250,220,0.7)';
+    } else if (type === 'silver') {
+      topColor = ctx.createLinearGradient(-r, -r, r, r);
+      topColor.addColorStop(0, '#f0f0f0');
+      topColor.addColorStop(0.5, '#c0c0c0');
+      topColor.addColorStop(1, '#808080');
+      bottomColor = ctx.createLinearGradient(-r, 0, r, r);
+      bottomColor.addColorStop(0, '#707070');
+      bottomColor.addColorStop(1, '#404040');
+      lineColor = 'rgba(20,20,20,0.5)';
+      highlightColor = 'rgba(255,255,255,0.8)';
+    } else {
+      isClear = true;
+      topColor = ctx.createLinearGradient(-r, -r, r, r);
+      topColor.addColorStop(0, 'rgba(240,245,250,0.4)');
+      topColor.addColorStop(0.5, 'rgba(200,210,220,0.25)');
+      topColor.addColorStop(1, 'rgba(150,160,170,0.2)');
+      bottomColor = ctx.createLinearGradient(-r, 0, r, r);
+      bottomColor.addColorStop(0, 'rgba(120,130,140,0.3)');
+      bottomColor.addColorStop(1, 'rgba(80,90,100,0.2)');
+      lineColor = 'rgba(200,210,220,0.4)';
+      highlightColor = 'rgba(255,255,255,0.8)';
+    }
+
+    // Shadow for depth (not for clear)
+    if (!isClear) {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetY = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = '#000';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Bottom half (darker)
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI);
+    ctx.fillStyle = bottomColor;
+    ctx.fill();
+
+    // Top half
+    ctx.beginPath();
+    ctx.arc(0, 0, r, Math.PI, Math.PI * 2);
+    ctx.fillStyle = topColor;
+    ctx.fill();
+
+    // Seam line
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.92, 0);
+    ctx.lineTo(r * 0.92, 0);
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Primary highlight (gloss)
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.3, -r * 0.45, r * 0.35, r * 0.18, -0.4, 0, Math.PI * 2);
+    ctx.fillStyle = highlightColor;
+    ctx.fill();
+
+    // Highlight dot
+    ctx.beginPath();
+    ctx.arc(-r * 0.45, -r * 0.55, r * 0.08, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fill();
+
+    // Clear: show inner prize hint
+    if (isClear) {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#d4af37';
+      ctx.beginPath();
+      ctx.arc(0, r * 0.1, r * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Outer rim
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    if (typeof r === 'number') r = { tl: r, tr: r, bl: r, br: r };
+    ctx.beginPath();
+    ctx.moveTo(x + r.tl, y);
+    ctx.lineTo(x + w - r.tr, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r.tr);
+    ctx.lineTo(x + w, y + h - r.br);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r.br, y + h);
+    ctx.lineTo(x + r.bl, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r.bl);
+    ctx.lineTo(x, y + r.tl);
+    ctx.quadraticCurveTo(x, y, x + r.tl, y);
+    ctx.closePath();
+  }
+
+  // ===== Animation Phases =====
+  let startTime = 0;
+
+  function animate(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = (ts - startTime) / 1000;
+    const t = elapsed;
+
+    switch (phase) {
+      case 'idle':
+        drawMachine(t);
+        break;
+
+      case 'crank': // 0-2s: Dial spins, capsules shake
+        dialAngle += 0.3;
+        shakeOffset.x = (Math.random() - 0.5) * 3;
+        shakeOffset.y = (Math.random() - 0.5) * 2;
+        capsules.forEach(cap => {
+          cap.x += (Math.random() - 0.5) * 4;
+          cap.y += (Math.random() - 0.5) * 3;
+        });
+        drawMachine(t);
+        if (phaseTime > 2.0) { setPhase('tumble'); }
+        break;
+
+      case 'tumble': // 2-5s: Capsules settle downward, one separates
+        capsules.forEach(cap => {
+          cap.vy += 0.15;
+          cap.y += cap.vy;
+          cap.x += (Math.random() - 0.5) * 1;
+          const maxY = dh * 0.48;
+          if (cap.y > maxY) { cap.y = maxY; cap.vy *= -0.3; }
+          cap.angle += (Math.random() - 0.5) * 0.1;
+        });
+        shakeOffset.x *= 0.95;
+        shakeOffset.y *= 0.95;
+        dialAngle += 0.05;
+        drawMachine(t);
+        if (phaseTime > 2.5) { setPhase('drop'); }
+        break;
+
+      case 'drop': { // 5-7.5s: Capsule drops out
+        const dp = Math.min(phaseTime / 2.0, 1);
+        const w = dw;
+        const h = dh;
+        if (!droppedCapsule) {
+          const type = isWin
+            ? 'gold'
+            : CAPSULE_TYPES[Math.floor(Math.random() * CAPSULE_TYPES.length)];
+          // Match the size of capsules inside the dome
+          const bw = w * 0.84;
+          const domeW = bw - 24;
+          const domeH = h * 0.72 * 0.48;
+          const matchedR = Math.min(domeW, domeH) * 0.095 + 1;
+          droppedCapsule = {
+            x: w / 2, y: h * 0.55,
+            r: matchedR, type: type, angle: 0, glowing: false
+          };
+        }
+        const targetY = h * 0.88;
+        const eased = 1 - Math.pow(1 - dp, 3);
+        droppedCapsule.y = h * 0.55 + (targetY - h * 0.55) * eased;
+        droppedCapsule.angle = dp * Math.PI * 4;
+
+        // Bounce effect
+        if (dp > 0.5 && dp < 0.7) {
+          droppedCapsule.y -= Math.sin((dp - 0.5) / 0.2 * Math.PI) * 15;
+        }
+        if (dp > 0.7 && dp < 0.85) {
+          droppedCapsule.y -= Math.sin((dp - 0.7) / 0.15 * Math.PI) * 6;
+        }
+
+        shakeOffset = { x: 0, y: 0 };
+        drawMachine(t);
+
+        if (phaseTime > 2.0) { setPhase('suspense'); }
+        break;
+      }
+
+      case 'suspense': { // 7.5-10s: Capsule glows (win hint), then reveal
+        if (droppedCapsule) {
+          droppedCapsule.glowing = isWin && phaseTime > 0.8;
+          droppedCapsule.angle += 0.02;
+          if (isWin && phaseTime > 0.8) {
+            droppedCapsule.r = 18 + Math.sin(phaseTime * 8) * 2;
+            if (phaseTime > 1.2 && Math.random() < 0.3) {
+              const w = dw;
+              const h = dh;
+              FX.sparkle(droppedCapsule.x, droppedCapsule.y, 3);
+            }
+          }
+        }
+        drawMachine(t);
+
+        if (phaseTime > 2.5) {
+          setPhase('reveal');
+        }
+        break;
+      }
+
+      case 'reveal':
+        if (onComplete) {
+          const cb = onComplete;
+          onComplete = null;
+          cb(isWin);
+        }
+        drawMachine(t);
+        return;
+    }
+
+    phaseTime += 0.016;
+    animId = requestAnimationFrame(animate);
+  }
+
+  function setPhase(p) {
+    phase = p;
+    phaseTime = 0;
+    const w = dw;
+    const h = dh;
+
+    if (p === 'crank') {
+      Audio2.coinInsert();
+      setTimeout(() => Audio2.gearCrank(), 300);
+      setTimeout(() => Audio2.capsulesTumble(), 800);
+    } else if (p === 'tumble') {
+      Audio2.capsulesTumble();
+    } else if (p === 'drop') {
+      Audio2.capsuleRoll();
+      setTimeout(() => Audio2.capsuleDrop(), 600);
+    } else if (p === 'suspense') {
+      Audio2.suspenseRise();
+    } else if (p === 'reveal') {
+      if (isWin) {
+        FX.flash('rgba(255,215,0,0.6)', 400);
+        setTimeout(() => FX.flash('rgba(255,255,255,0.4)', 200), 200);
+        FX.lightRays(w / 2, h * 0.5, 16, 2.5);
+        FX.confetti(w / 2, h * 0.4, 100);
+        setTimeout(() => FX.sparkle(w / 2, h * 0.4, 40), 300);
+        Audio2.winReveal();
+      } else {
+        FX.flash('rgba(150,150,200,0.2)', 200);
+        Audio2.loseReveal();
+      }
+    }
+  }
+
+  function start(win, cb) {
+    isWin = win;
+    onComplete = cb;
+    droppedCapsule = null;
+    shakeOffset = { x: 0, y: 0 };
+    dialAngle = 0;
+    startTime = 0;
+    createCapsules();
+    setPhase('crank');
+    animId = requestAnimationFrame(animate);
+  }
+
+  function showIdle() {
+    droppedCapsule = null;
+    shakeOffset = { x: 0, y: 0 };
+    dialAngle = 0;
+    phase = 'idle';
+    createCapsules();
+    drawMachine(0);
+  }
+
+  function stop() {
+    if (animId) cancelAnimationFrame(animId);
+    animId = null;
+  }
+
+  return { init, resize, start, showIdle, stop };
+})();
+
+// ============================================================
+// DATA
+// ============================================================
+const ICONS = ['🎁','💎','⭐','🏆','👑','🎯','💰','🎪','🎲','✨','🔥','💪'];
+const DEFAULT_PRIZES = [
+  { name: '次回500円OFF', icon: '🎁', probability: 30, description: '次回の施術が500円引き' },
+  { name: 'ミニ皮脂洗浄体験', icon: '✨', probability: 15, description: '皮脂毛穴洗浄5分体験' },
+];
+
+function loadConfig() {
+  try { const d = localStorage.getItem('mensgod_gacha_config'); if (d) return JSON.parse(d); } catch(e) {}
+  return { prizes: DEFAULT_PRIZES };
+}
+function saveConfig(c) { localStorage.setItem('mensgod_gacha_config', JSON.stringify(c)); }
+function loadLog() {
+  try { const d = localStorage.getItem('mensgod_gacha_log'); if (d) return JSON.parse(d); } catch(e) {}
+  return [];
+}
+function saveLog(l) { localStorage.setItem('mensgod_gacha_log', JSON.stringify(l)); }
+
+let config = loadConfig();
+let selectedPrizeIndex = -1;
+
+// ============================================================
+// SCREEN MANAGEMENT
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+// START SCREEN
+// ============================================================
+document.getElementById('startBtn').addEventListener('click', () => {
+  Audio2.tap();
+  selectedPrizeIndex = -1;
+  showScreen('selectScreen');
+  renderPrizeCards();
+});
+
+document.getElementById('adminBtn').addEventListener('click', () => {
+  Audio2.tap();
+  showScreen('adminScreen');
+  renderAdminScreen();
+});
+
+// ============================================================
+// SELECT SCREEN
+// ============================================================
+function renderPrizeCards() {
+  const container = document.getElementById('prizesContainer');
+  container.innerHTML = '';
+  const btn = document.getElementById('gachaBtn');
+  btn.classList.remove('enabled');
+  selectedPrizeIndex = -1;
+  config = loadConfig();
+
+  config.prizes.forEach((prize, i) => {
+    const card = document.createElement('div');
+    card.className = 'prize-card';
+    card.innerHTML = `
+      <div class="prize-icon">${prize.icon}</div>
+      <div class="prize-info">
+        <div class="prize-name">${prize.name}</div>
+        <div class="prize-desc">${prize.description || ''}</div>
+      </div>
+      <div class="prize-check"></div>
+    `;
+    card.addEventListener('click', () => {
+      Audio2.select();
+      document.querySelectorAll('.prize-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedPrizeIndex = i;
+      btn.classList.add('enabled');
+    });
+    container.appendChild(card);
+  });
+}
+
+document.getElementById('gachaBtn').addEventListener('click', () => {
+  if (selectedPrizeIndex < 0) return;
+  Audio2.tap();
+  showScreen('gachaScreen');
+  startGacha();
+});
+
+// ============================================================
+// GACHA SCREEN
+// ============================================================
+function startGacha() {
+  const gachaCanvas = document.getElementById('gachaCanvas');
+  GachaMachine.init(gachaCanvas);
+  GachaMachine.resize();
+
+  const tapZone = document.getElementById('gachaTapZone');
+  const tapLabel = document.getElementById('gachaTapLabel');
+  tapLabel.textContent = 'タップしてガチャを回す！';
+  tapZone.style.pointerEvents = 'auto';
+
+  GachaMachine.showIdle();
+
+  function onTap() {
+    tapZone.removeEventListener('click', onTap);
+    tapLabel.style.display = 'none';
+    tapZone.style.pointerEvents = 'none';
+
+    const prize = config.prizes[selectedPrizeIndex];
+    const win = Math.random() * 100 < prize.probability;
+
+    GachaMachine.start(win, (isWin) => {
+      GachaMachine.stop();
+      setTimeout(() => showResult(isWin, prize), isWin ? 600 : 400);
+    });
+  }
+
+  tapZone.addEventListener('click', onTap);
+}
+
+// ============================================================
+// RESULT SCREEN
+// ============================================================
+function showResult(isWin, prize) {
+  const container = document.getElementById('resultContainer');
+  const log = loadLog();
+  FX.clear();
+
+  if (isWin) {
+    container.className = 'result-container result-win';
+    container.innerHTML = `
+      <div class="result-label">あたり！</div>
+      <div class="result-prize-icon">${prize.icon}</div>
+      <div class="result-prize-name">${prize.name}</div>
+      <div class="result-prize-desc">${prize.description || ''}</div>
+      <button class="reset-btn" id="resetBtn">もどる</button>
+    `;
+    log.unshift({ date: new Date().toLocaleString('ja-JP'), prize: prize.name, result: 'win' });
+
+    setTimeout(() => {
+      const w = window.innerWidth, h = window.innerHeight;
+      FX.lightRays(w / 2, h * 0.35, 14, 3);
+      FX.confetti(w / 2, h * 0.3, 100);
+      Audio2.shimmer();
+    }, 400);
+    setTimeout(() => FX.sparkle(window.innerWidth / 2, window.innerHeight * 0.35, 25), 800);
+    setTimeout(() => FX.confetti(window.innerWidth * 0.3, window.innerHeight * 0.2, 30), 1000);
+    setTimeout(() => FX.confetti(window.innerWidth * 0.7, window.innerHeight * 0.2, 30), 1200);
+  } else {
+    container.className = 'result-container result-lose';
+    container.innerHTML = `
+      <div class="result-label">おしい...！</div>
+      <div class="result-message">次回もチャレンジ！</div>
+      <div class="result-encourage">ご来店ありがとうございます</div>
+      <button class="reset-btn" id="resetBtn">もどる</button>
+    `;
+    log.unshift({ date: new Date().toLocaleString('ja-JP'), prize: prize.name, result: 'lose' });
+  }
+
+  saveLog(log.slice(0, 100));
+  showScreen('resultScreen');
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    Audio2.tap();
+    FX.clear();
+    showScreen('startScreen');
+  });
+}
+
+// ============================================================
+// ADMIN SCREEN
+// ============================================================
+function renderAdminScreen() {
+  config = loadConfig();
+  const editors = document.getElementById('prizeEditors');
+  editors.innerHTML = '';
+  config.prizes.forEach((prize, i) => {
+    const ed = document.createElement('div');
+    ed.className = 'prize-editor';
+    ed.innerHTML = `
+      <div class="prize-editor-header">
+        <div class="prize-editor-label">景品 ${i + 1}</div>
+        ${config.prizes.length > 1 ? `<button class="prize-editor-delete" data-idx="${i}">&times;</button>` : ''}
+      </div>
+      <div class="field"><label>景品名</label><input type="text" class="prize-name-input" data-idx="${i}" value="${prize.name}" placeholder="景品名を入力"></div>
+      <div class="field"><label>説明（任意）</label><input type="text" class="prize-desc-input" data-idx="${i}" value="${prize.description || ''}" placeholder="説明を入力"></div>
+      <div class="field"><label>アイコン</label>
+        <div class="icon-selector" data-idx="${i}">
+          ${ICONS.map(ic => `<div class="icon-option ${ic === prize.icon ? 'selected' : ''}" data-icon="${ic}">${ic}</div>`).join('')}
+        </div>
+      </div>
+      <div class="field"><label>当選確率</label>
+        <div class="prob-slider">
+          <input type="range" min="0" max="100" value="${prize.probability}" class="prize-prob-input" data-idx="${i}">
+          <div class="prob-value" data-idx="${i}">${prize.probability}%</div>
+        </div>
+      </div>
+    `;
+    editors.appendChild(ed);
+  });
+
+  document.querySelectorAll('.prize-editor-delete').forEach(btn => {
+    btn.addEventListener('click', () => { config.prizes.splice(parseInt(btn.dataset.idx), 1); saveConfig(config); renderAdminScreen(); });
+  });
+  document.querySelectorAll('.prize-name-input').forEach(input => {
+    input.addEventListener('input', () => { config.prizes[parseInt(input.dataset.idx)].name = input.value; });
+  });
+  document.querySelectorAll('.prize-desc-input').forEach(input => {
+    input.addEventListener('input', () => { config.prizes[parseInt(input.dataset.idx)].description = input.value; });
+  });
+  document.querySelectorAll('.prize-prob-input').forEach(input => {
+    input.addEventListener('input', () => {
+      const idx = parseInt(input.dataset.idx);
+      config.prizes[idx].probability = parseInt(input.value);
+      document.querySelector(`.prob-value[data-idx="${idx}"]`).textContent = input.value + '%';
+    });
+  });
+  document.querySelectorAll('.icon-selector').forEach(selector => {
+    const idx = parseInt(selector.dataset.idx);
+    selector.querySelectorAll('.icon-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        selector.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        config.prizes[idx].icon = opt.dataset.icon;
+      });
+    });
+  });
+  renderLog();
+}
+
+function renderLog() {
+  const log = loadLog();
+  const container = document.getElementById('logEntries');
+  if (log.length === 0) { container.innerHTML = '<div class="log-empty">まだ抽選ログがありません</div>'; return; }
+  container.innerHTML = log.slice(0, 30).map(e => `
+    <div class="log-entry">
+      <span class="log-date">${e.date}</span>
+      <span class="log-result ${e.result === 'win' ? 'log-win' : 'log-lose'}">${e.result === 'win' ? '🎉 ' + e.prize : '✕ ' + e.prize}</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('addPrizeBtn').addEventListener('click', () => {
+  if (config.prizes.length >= 3) { alert('景品は3つまで設定できます'); return; }
+  config.prizes.push({ name: '', icon: '🎁', probability: 20, description: '' });
+  saveConfig(config);
+  renderAdminScreen();
+});
+
+document.getElementById('adminSaveBtn').addEventListener('click', () => {
+  if (!config.prizes.every(p => p.name.trim() !== '')) { alert('景品名を入力してください'); return; }
+  saveConfig(config);
+  Audio2.tap();
+  const btn = document.getElementById('adminSaveBtn');
+  btn.textContent = '保存しました！';
+  btn.style.background = 'var(--success)';
+  setTimeout(() => { btn.textContent = '設定を保存'; btn.style.background = ''; }, 1500);
+});
+
+document.getElementById('adminClose').addEventListener('click', () => {
+  Audio2.tap();
+  config = loadConfig();
+  showScreen('startScreen');
+});
+
+document.getElementById('logClearBtn').addEventListener('click', () => {
+  if (confirm('抽選ログをクリアしますか？')) { saveLog([]); renderLog(); }
+});
+</script>
+</body>
+</html>
